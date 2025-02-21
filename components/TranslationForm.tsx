@@ -6,8 +6,8 @@ import { useTranslation } from "@/hooks/useTranslation"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { ClipboardIcon } from "lucide-react"
+import TranslateButton from "./TranslateButton"
 
 type FormInputs = {
   sourceText: string
@@ -35,43 +35,64 @@ export default function TranslationForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="sourceText">Source Text</Label>
-        <Textarea
-          id="sourceText"
-          {...register("sourceText", { required: "Source text is required" })}
-          placeholder="Enter text to translate"
-        />
-        {errors.sourceText && <p className="text-sm text-red-500">{errors.sourceText.message}</p>}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="targetLanguage">Target Language</Label>
-        <Input
-          id="targetLanguage"
-          {...register("targetLanguage", { required: "Target language is required" })}
-          placeholder="Enter target language (e.g., Spanish, French, German)"
-        />
-        {errors.targetLanguage && <p className="text-sm text-red-500">{errors.targetLanguage.message}</p>}
-      </div>
-
-      <Button type="submit" disabled={isLoading}>
-        {isLoading ? "Translating..." : "Translate"}
-      </Button>
-
-      {error && <p className="text-sm text-red-500">{error}</p>}
-
-      {translatedText && (
-        <div className="mt-4 p-4 bg-secondary rounded-md relative">
-          <h2 className="text-xl font-semibold mb-2">Translation</h2>
-          <p className="whitespace-pre-wrap">{translatedText}</p>
-          <Button variant="ghost" size="icon" className="absolute top-2 right-2" onClick={copyToClipboard}>
-            <ClipboardIcon className="h-4 w-4" />
-            <span className="sr-only">Copy to clipboard</span>
-          </Button>
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+      {/* Language Selection Bar */}
+      <div className="flex flex-row gap-4 mb-4">
+        <div className="flex-1">
+          <Input
+            value="Auto detect"
+            disabled
+            className="w-full bg-muted"
+          />
         </div>
-      )}
+        <div className="flex-1">
+          <Input
+            id="targetLanguage"
+            {...register("targetLanguage", { required: "Target language is required" })}
+            placeholder={window.innerWidth < 640 ? "Target language" : "Enter target language (e.g., Spanish, French, German)"}
+          />
+          {errors.targetLanguage && <p className="text-sm text-red-500">{errors.targetLanguage.message}</p>}
+        </div>
+      </div>
+
+      {/* Text Areas */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-4">
+        <div className="flex-1">
+          <Textarea
+            id="sourceText"
+            {...register("sourceText", { required: "Source text is required" })}
+            placeholder="Enter text to translate"
+            className="min-h-[200px] resize-none"
+          />
+          {errors.sourceText && <p className="text-sm text-red-500">{errors.sourceText.message}</p>}
+        </div>
+        <div className="flex-1 relative">
+          <Textarea
+            value={translatedText}
+            disabled
+            placeholder="Translation will appear here"
+            className="min-h-[200px] resize-none"
+          />
+          {translatedText && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2"
+              onClick={copyToClipboard}
+            >
+              <ClipboardIcon className="h-4 w-4" />
+              <span className="sr-only">Copy to clipboard</span>
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Translate Button */}
+      <div className="flex justify-center">
+        <TranslateButton isLoading={isLoading} />
+      </div>
+
+      {error && <p className="text-sm text-red-500 text-center mt-2">{error}</p>}
     </form>
   )
 }
