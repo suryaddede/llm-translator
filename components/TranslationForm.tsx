@@ -6,7 +6,7 @@ import { useTranslation } from "@/hooks/useTranslation"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
-import { ClipboardIcon } from "lucide-react"
+import { ClipboardCheck, ClipboardIcon } from "lucide-react"
 import TranslateButton from "./TranslateButton"
 
 type FormInputs = {
@@ -16,6 +16,7 @@ type FormInputs = {
 
 export default function TranslationForm() {
   const [translatedText, setTranslatedText] = useState("")
+  const [isCopied, setIsCopied] = useState(false)
   const {
     register,
     handleSubmit,
@@ -31,7 +32,31 @@ export default function TranslationForm() {
   }
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(translatedText)
+    if (navigator.clipboard && window.isSecureContext) {
+      // For modern browsers
+      navigator.clipboard.writeText(translatedText)
+      setIsCopied(true)
+      setTimeout(() => setIsCopied(false), 5000)
+    } else {
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = translatedText;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      try {
+        document.execCommand('copy');
+        textArea.remove();
+        setIsCopied(true)
+        setTimeout(() => setIsCopied(false), 5000)
+      } catch (err) {
+        console.error('Failed to copy text: ', err);
+      }
+    }
   }
 
   return (
@@ -71,17 +96,24 @@ export default function TranslationForm() {
             value={translatedText}
             disabled
             placeholder="Translation will appear here"
-            className="min-h-[200px] resize-none"
+            className="min-h-[200px] resize-none bg-muted"
           />
           {translatedText && (
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               className="absolute top-2 right-2"
               onClick={copyToClipboard}
             >
-              <ClipboardIcon className="h-4 w-4" />
-              <span className="sr-only">Copy to clipboard</span>
+              {isCopied ? (
+                <ClipboardCheck className="h-4 w-4 text-green-500" />
+              ) : (
+                <ClipboardIcon className="h-4 w-4" />
+              )}
+              <span className="sr-only">
+                {isCopied ? "Copied!" : "Copy to clipboard"}
+              </span>
             </Button>
           )}
         </div>
