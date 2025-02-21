@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     const { sourceText, targetLanguage } = await request.json()
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
-    const prompt = `Translate the following text into ${targetLanguage}: "${sourceText}"`
+    const prompt = `Translate the following text into ${targetLanguage} language without elaboration: "${sourceText}"`
     const result = await model.generateContent(prompt)
     const response = result.response
     const translatedText = response.text()
@@ -19,4 +19,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "An error occurred during translation." }, { status: 500 })
   }
 }
-
